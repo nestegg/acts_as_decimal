@@ -1,0 +1,40 @@
+ActsAsDecimal
+=============
+
+acts_as_decimal provides a solution for storing decimal values in
+an ActiveRecord model as an integer.  Unlike some similar plugins, this one
+is not specific to currency and allows you to specify the number of digits
+to the right of the decimal point.
+
+  Install plugin:  ./script/plugin install svn://svn.projects.nestegg.com/acts_as_decimal
+
+  Test plugin: rake test:plugins PLUGIN=acts_as_decimal
+
+Add integer columns:
+
+  create_table :holdings do |t|
+    t.column :ticker, :string, :limit => 8
+    t.column :num_shares, :integer
+    t.column :share_price, :integer
+    t.column :commission, :integer
+    t.column :basis, :integer
+  end
+
+In your model:
+
+  class Holding < ActiveRecord::Base
+
+    acts_as_decimal :share_price, :precision => 4
+    acts_as_decimal :commission, :basis, :precision => 2
+
+  end
+
+share_price, commission and basis will now return BigDecimal objects and assignments
+will be appropriatedly adjusted and stored as an integer.
+
+Note: It should be obvious that by storing the decimal as an integer we are trading
+range for precision.  You need to take this into account when designing your database
+model.  For instance, if your database has 32-bit integers, it can represent numbers
+of the range +/- 2**31 or approximately +/- 2,000,000,000.  If we are storing a decimal
+number with 2 digits to the right of the decimal point in that same integer, the range
+is decreased to +/- 20,000,000.
